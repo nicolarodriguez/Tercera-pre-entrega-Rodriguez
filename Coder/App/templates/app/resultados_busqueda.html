@@ -1,0 +1,27 @@
+{% extends "app/base.html" %}
+
+{% load static %}
+
+{% block title %} Buscar Curso {% endblock title %}
+
+{% block main %}
+    <h1>Buscar una camada</h1>
+    <form action="" method="POST">
+        {% csrf_token %}
+
+        {{CursoFormulario.camada.lebel_tag}}
+        {{CursoFormulario.camada}}
+        <input type="submit" value="Buscar">
+        
+    <form> 
+        
+        {% if cursos %}
+            <ul>
+                {% for curso in cursos %}
+                    <li>Curso: {{curso.curso}}</li>
+                {% endfor %}    
+            </ul>    
+        {% else %}  
+            <p> No hay cursos con esa camada.</p>
+        {% endif %}           
+{% endblock main %}
