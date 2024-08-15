@@ -3777,6 +3777,13 @@ textarea.form-control-lg {
 .navbar-brand:hover, .navbar-brand:focus {
   color: var(--bs-navbar-brand-hover-color);
 }
+.navbar-avatar {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
 
 .navbar-nav {
   --bs-nav-link-padding-x: 0;
@@ -4138,13 +4145,13 @@ textarea.form-control-lg {
 }
 
 .navbar-dark {
-  --bs-navbar-color: rgba(255, 255, 255, 0.55);
+  --bs-navbar-color: rgba(132, 212, 79, 0.55);
   --bs-navbar-hover-color: rgba(255, 255, 255, 0.75);
-  --bs-navbar-disabled-color: rgba(255, 255, 255, 0.25);
+  --bs-navbar-disabled-color: rgba(89, 221, 89, 0.25);
   --bs-navbar-active-color: #fff;
   --bs-navbar-brand-color: #fff;
   --bs-navbar-brand-hover-color: #fff;
-  --bs-navbar-toggler-border-color: rgba(255, 255, 255, 0.1);
+  --bs-navbar-toggler-border-color: rgb(76, 211, 87);
   --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
@@ -7993,6 +8000,22 @@ textarea.form-control-lg {
 .text-center {
   text-align: center !important;
 }
+.text-container {
+  background-color: #f8f9fa; 
+  border-radius: 8px; 
+  padding: 20px; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  margin: 20px 0; 
+}
+
+.text-container h2 {
+  color: #333;
+}
+
+.text-container p {
+  color: #666; 
+}
+
 
 .text-decoration-none {
   text-decoration: none !important;
@@ -10829,4 +10852,28 @@ textarea.form-control-lg {
   background-attachment: scroll;
   background-position: center;
   background-size: cover;
+}
+
+/* styles.css */
+.toggle-summary {
+  cursor: pointer;
+  color: #007bff;
+  font-weight: bold;
+}
+
+details[open] summary.toggle-summary::after {
+  content: " (Leer menos)";
+}
+
+summary.toggle-summary::after {
+  content: " (Leer más)";
+}
+
+summary.toggle-summary {
+  list-style: none;
+  outline: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
 }

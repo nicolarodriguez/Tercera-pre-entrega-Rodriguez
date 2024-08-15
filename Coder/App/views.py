@@ -1,84 +1,65 @@
-from django.shortcuts import render
-from App.models import Curso, Profesores, Estudiantes, Entregable
-from App.forms import CursoFormulario, ProfeFormulario, EstudiantesFormulario, EntregableFormulario, BuscarCursoFormulario
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from .models import Receta
+from .forms import RecetaForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 # Create your views here.
-def inicio(request):
-    return render(request, "app/index.html")
 
-def listar(request):
-    cursos = Curso.objects.all()
-    return render(request, "app/listar.html", {"cursos": cursos})
+def home(request):
+    return render(request, "app/index.html")       
 
-def cursos(request):
-    return render(request,"app/form_curso.html")
+def about(request):
+    informacion = "Esta página de recetas fitness ofrece una variedad de recetas saludables diseñadas para apoyar un estilo de vida activo. Proporciona opciones nutritivas, fáciles de preparar y equilibradas en macronutrientes, ideales para quienes buscan mejorar su bienestar, mantener su peso o alcanzar sus objetivos de fitness. Es una herramienta práctica para inspirar y guiar a las personas en su camino hacia una alimentación consciente y saludable."
+    return render(request, 'app/about.html', {'informacion': informacion})
 
-def profesores(request):
-    return render(request,"app/profesores.html")
+def recetas_list(request):
+    recetas = Receta.objects.all()
+    return render(request, 'app/recetas.html', {'recetas': recetas})
 
-def estudiantes(request):
-    return render(request,"app/estudiantes.html")
-
-def entregables(request):
-    return render(request,"app/entregables.html")
-
-def form_curso(request):
-    if request.method == "POST":
-        FormularioDeCurso = CursoFormulario(request.POST)
-        if FormularioDeCurso.is_valid():
-            informacion = FormularioDeCurso.cleaned_data
-            
-            curso = Curso(curso=informacion["curso"], camada=informacion["camada"])
-            curso.save()
+@login_required
+def publicar_receta(request):
+    if request.method == 'POST':
+        form = RecetaForm(request.POST, request.FILES)
+        if form.is_valid():
+            receta = form.save(commit=False)
+            receta.autor = request.user
+            receta.save()
+            return redirect('recetas_list')
     else:
-        FormularioDeCurso = CursoFormulario()
-        
-    return render(request, "app/form_curso.html", {"FormularioDeCurso": FormularioDeCurso})                
+        form = RecetaForm()
+    return render(request, 'app/publicar_recetas.html', {'form': form})    
+
+@login_required
+def editar_receta(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
+
+    if receta.autor != request.user:
+        return redirect('recetas_list')
+
+    if request.method == 'POST':
+        form = RecetaForm(request.POST, request.FILES, instance=receta)
+        if form.is_valid():
+            form.save()
+            return redirect('recetas_list')
+    else:
+        form = RecetaForm(instance=receta)
+
+    return render(request, 'app/editar_receta.html', {'form': form})    
+
+def receta_detail(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
+    return render(request, 'app/receta_detail.html', {'receta': receta})
+
+
+@login_required
+def borrar_receta(request, receta_id):
+    receta = get_object_or_404(Receta, id=receta_id)
     
-def form_profe(request):
-    if request.method == "POST":
-        FormularioDeProfe = ProfeFormulario(request.POST)
-        if FormularioDeProfe.is_valid():
-            informacion = FormularioDeProfe.cleaned_data
-            
-            profe = Profesores(nombre=informacion["nombre"], apellido=informacion["apellido"], email=informacion["email"], profesion=informacion["profesion"])
-            profe.save()
+    if request.user == receta.autor or request.user.is_staff:
+        receta.delete()
+        messages.success(request, 'Receta eliminada con éxito.')
+        return redirect('recetas_list')
     else:
-        FormularioDeProfe = ProfeFormulario()
-        
-    return render(request, "app/form_profe.html", {"FormularioDeProfe": FormularioDeProfe})
-
-def form_estudiante(request):
-    if request.method == "POST":
-        FormularioDeEstudiante = EstudiantesFormulario(request.POST)
-        if FormularioDeEstudiante.is_valid():
-            informacion = FormularioDeEstudiante.cleaned_data
-            
-            estudiante = Estudiantes(nombre=informacion["nombre"], apellido=informacion["apellido"], email=informacion["email"])
-            estudiante.save()
-    else:
-        FormularioDeEstudiante = EstudiantesFormulario()
-        
-    return render(request, "app/form_estudiante.html", {"FormularioDeEstudiante": FormularioDeEstudiante})
-
-def form_entregable(request):
-    if request.method == "POST":
-        FormularioDeEntregable = EntregableFormulario(request.POST)
-        if FormularioDeEntregable.is_valid():
-            informacion = FormularioDeEntregable.cleaned_data
-            
-            entregable = Entregable(nombre=informacion["nombre"], fechaDeEntrega=informacion["fechaDeEntrega"], entregado=informacion["entregado"])
-            entregable.save()
-    else:
-        FormularioDeEntregable = EntregableFormulario()
-        
-    return render(request, "app/form_entregable.html", {"FormularioDeEntregable": FormularioDeEntregable})        
-
-def buscar_curso(request):
-    CursoFormulario = BuscarCursoFormulario(request.POST or None)
-    cursos = None
-    
-    if request.method == "POST" and CursoFormulario.is_valid():
-        camada = CursoFormulario.cleaned_data["camada"]
-        cursos = Curso.objects.filter(camada=camada)
-        
-    return render(request, "app/resultados_busqueda.html", {"CursoFormulario": CursoFormulario, "cursos": cursos})              
+        messages.error(request, 'No tienes permiso para eliminar esta receta.')
+        return redirect('receta_detail', receta_id=receta_id)
